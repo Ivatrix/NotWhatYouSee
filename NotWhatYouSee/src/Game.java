@@ -1,4 +1,6 @@
 
+import static org.lwjgl.openal.AL10.*;
+
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -9,6 +11,17 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.util.glu.GLU;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import org.lwjgl.util.WaveData;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+
+
 public class Game {
 	private int VBOVertexHandle;
 	private int VBOColorHandle;
@@ -18,6 +31,7 @@ public class Game {
 		try {
 			CreateWindow();
 			InitGL();
+			init();
 
 			Run();
 		} catch (Exception e) {
@@ -40,9 +54,10 @@ public class Game {
 		}
 		Display.setDisplayMode(displayMode);
 		Display.setTitle("SWIGGITY SWAG");
+		AL.create();
 		Display.create();
 	}
-
+	
 	private void InitGL() {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
@@ -63,6 +78,19 @@ public class Game {
 
 		GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
 	}
+	
+	private WaveData data;
+	private int source;
+	
+	private void init() throws FileNotFoundException
+	{
+		WaveData data = WaveData.create(new BufferedInputStream(new FileInputStream("res/thump.wav")));
+		int buffer = alGenBuffers();
+		alBufferData(buffer,data.format,data.data,data.samplerate);
+		data.dispose();
+		source = alGenSources();
+		alSourcei(source,AL_BUFFER,buffer);
+	}
 
 	private void Run() {
 		CreateVBO();
@@ -73,7 +101,12 @@ public class Game {
 						| GL11.GL_DEPTH_BUFFER_BIT);
 				GL11.glLoadIdentity();
 
-				GL11.glTranslatef((float)Math.sin(RotateYaw/180*Math.PI), 0f, -4f); // Move Right 1.5 Units And Into
+				float horiz = (float)Math.sin(RotateYaw/180*Math.PI);
+				
+				if(horiz == 1 || horiz == -1)
+					playSound(horiz);
+				
+				GL11.glTranslatef(horiz, 0f, -4f); // Move Right 1.5 Units And Into
 												// The
 				GL11.glRotatef(45f, 0.4f, 1.0f, 0.1f);
 				GL11.glRotatef(RotateYaw, 1f, 1.0f, 1f);
@@ -86,6 +119,7 @@ public class Game {
 
 			}
 		}
+		AL.destroy();
 		Display.destroy();
 
 	}
@@ -98,6 +132,12 @@ public class Game {
 		GL11.glColorPointer(3, GL11.GL_FLOAT, 0, 0L);
 		GL11.glDrawArrays(GL11.GL_QUADS, 0, 24);
 		GL11.glPopMatrix();
+	}
+	
+	private void playSound(float location)
+	{		
+		AL10.alSource3f(source,AL10.AL_POSITION, location,0f,0f);
+		alSourcePlay(source);
 	}
 
 	private void CreateVBO() {
