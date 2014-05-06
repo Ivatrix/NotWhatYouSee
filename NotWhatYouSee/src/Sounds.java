@@ -95,7 +95,7 @@ public class Sounds {
 
 		addSources(WALKING);
 		addSources(RUNNING);
-		//addSources(AMBI);
+		addSources(AMBI);
 	}
 
 	private void addSources(int type) {
@@ -112,8 +112,9 @@ public class Sounds {
 
 	private void Run() {
 		try {
-			//alSourcePlay(AMBI);
+			alSourcePlay(source.get(AMBI));	
 		} catch (Exception e) {
+			System.out.println(alGetError());
 			e.printStackTrace();
 		}
 
@@ -123,6 +124,8 @@ public class Sounds {
 						| GL11.GL_DEPTH_BUFFER_BIT);
 				GL11.glLoadIdentity();
 
+				
+				
 				while (Keyboard.next() == true) {
 					if (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
 							&& Keyboard.isKeyDown(Keyboard.KEY_W)
@@ -152,7 +155,7 @@ public class Sounds {
 				e.printStackTrace();
 			}
 		}
-		alSourceStop(AMBI);
+
 		AL.destroy();
 		Display.destroy();
 		System.exit(0);
