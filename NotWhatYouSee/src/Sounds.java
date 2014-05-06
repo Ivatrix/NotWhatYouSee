@@ -111,12 +111,8 @@ public class Sounds {
 	}
 
 	private void Run() {
-		try {
+			alSourcef(source.get(AMBI), AL10.AL_GAIN,1.0f);		
 			alSourcePlay(source.get(AMBI));	
-		} catch (Exception e) {
-			System.out.println(alGetError());
-			e.printStackTrace();
-		}
 
 		while (!Display.isCloseRequested()) {
 			try {
